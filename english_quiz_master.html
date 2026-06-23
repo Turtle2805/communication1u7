@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ms Lê Hằng English - Interactive Quiz Master</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --primary: #8854C0;
+            --secondary: #FDCB6E;
+            --accent: #00C9A7;
+            --correct: #00D26A;
+            --wrong: #FF4757;
+            --neutral-bg: #FFFFFF;
+            --text-dark: #2D3436;
+            --card-border: #E4F1FE;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Quicksand', 'Nunito', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            /* Animated Looping Gradient Background */
+            background: linear-gradient(-45deg, #FF7675, #74B9FF, #A29BFE, #ffeaa7, #55E6C1);
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease infinite;
+            position: relative;
+            padding: 20px 10px 100px 10px;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Floating SVG Pattern Overlay */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.15;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23ffffff' fill-opacity='0.7'%3E%3Cpath d='M10 15c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm50 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM10 55c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm50 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM35 35c-1.6 0-3 1.4-3 3s1.4 3 3 3 3-1.4 3-3-1.4-3-3-3z'/%3E%3Cpath d='M16 35.5c0-.8-.7-1.5-1.5-1.5H13v-1.5c0-.8-.7-1.5-1.5-1.5S10 31.7 10 32.5V34H8.5C7.7 34 7 34.7 7 35.5S7.7 37 8.5 37H10v1.5c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5V37h1.5c.8 0 1.5-.7 1.5-1.5z'/%3E%3Ccircle cx='55' cy='35' r='4'/%3E%3C/g%3E%3C/svg%3E");
+            animation: floatPattern 40s linear infinite;
+        }
+
+        @keyframes floatPattern {
+            from { background-position: 0 0; }
+            to { background-position: 600px 1200px; }
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 3D shadow style buttons */
+        .gamified-btn {
+            border-bottom: 5px solid #CBD5E1;
+            transition: all 0.1s ease;
+        }
+
+        .gamified-btn:hover:not(.disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .gamified-btn:active:not(.disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+
+        /* Correct/Wrong Visual Highlights matching Duolingo specifications */
+        .option-btn.correct {
+            background-color: #D4EDDA !important;
+            border-color: var(--correct) !important;
+            border-bottom: 5px solid #219653 !important;
+            color: #155724 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: #FCE8E6 !important;
+            border-color: var(--wrong) !important;
+            border-bottom: 5px solid #EB5757 !important;
+            color: #A83232 !important;
+        }
+
+        .option-btn.disabled {
+            cursor: default;
+            opacity: 0.85;
+        }
+
+        /* Shake animation for errors */
+        .shake {
+            animation: shakeWidget 0.4s ease;
+        }
+
+        @keyframes shakeWidget {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        /* Animated looping gradient highlight for tabs */
+        .tab-btn.active {
+            background: var(--primary);
+            color: white !important;
+            border-color: #713BB0;
+            border-bottom: 5px solid #5F27CD;
+            box-shadow: 0 6px 15px rgba(136, 84, 192, 0.4);
+        }
+
+        /* Confetti canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-pattern"></div>
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="container py-6">
+        <!-- Brand Header aligned with the user mockup specifications -->
+        <header class="text-center mb-6 text-white drop-shadow-md">
+            <div class="inline-flex items-center gap-2 bg-black/30 px-4 py-2 rounded-full text-xs sm:text-sm font-bold border border-white/20 mb-3">
+                <i class="fa-solid fa-graduation-cap"></i> Giáo viên tạo: Ms Lê Hằng English
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black tracking-wide flex items-center justify-center gap-2">
+                ⭐ Ôn Tập Tiếng Anh Siêu Cấp ⭐
+            </h1>
+        </header>
+
+        <!-- Warning Info Banner block -->
+        <div class="bg-[#FFEAA7] border-4 border-[#FDCB6E] rounded-3xl p-5 mb-6 shadow-lg transform -rotate-[0.5deg]">
+            <h3 class="text-[#D63031] text-lg font-black flex items-center justify-center gap-2 mb-2 text-center">
+                ⚠️ LỜI NHẮC CỰC KỲ QUAN TRỌNG ⚠️
+            </h3>
+            <p class="text-sm sm:text-base text-[#2D3436] font-bold text-center leading-relaxed">
+                Chỉ có đọc kỹ giải thích ngay sau mỗi câu, sau đó ghi lại từ vựng/cấu trúc mới vào vở để học thì mới thực sự giỏi lên.<br>
+                Làm cho xong mà không đọc giải thích hay đọc qua loa không ghi chép thì chỉ tốn thời gian vô ích!<br>
+                <span class="text-[#8854C0] font-black">* Kéo tới đâu, làm tới đó! *</span>
+            </p>
+        </div>
+
+        <!-- Dynamic Exercise Navigation Tabs -->
+        <div class="grid grid-cols-2 gap-3 mb-6" id="tabs-container"></div>
+
+        <!-- Quiz Container block -->
+        <div id="active-quiz-container"></div>
+    </div>
+
+    <!-- Floating Sticky Bottom Scoreboard and Submission Bar -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.15)] py-4 px-6 flex justify-between items-center z-50 border-t-4 border-[#8854C0]">
+        <div class="flex items-center gap-2 text-lg sm:text-xl font-black text-[#8854C0]" id="footer-score-display">
+            ⭐ Điểm của con: 0
+        </div>
+        <button class="bg-[#00D26A] text-white border-b-4 border-[#219653] hover:translate-y-[-2px] active:translate-y-[2px] active:border-b-2 hover:shadow-[0_6px_18px_rgba(0,210,106,0.4)] px-6 sm:px-10 py-3 rounded-full text-base sm:text-lg font-black transition-all flex items-center gap-2" onclick="gradeExam()">
+            NỘP BÀI <i class="fa-solid fa-paper-plane animate-bounce"></i>
+        </button>
+    </div>
+
+    <!-- Score Overlay popup dialogues -->
+    <div id="gradeModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden justify-center items-center z-[10000] p-4">
+        <div class="bg-white rounded-[35px] p-6 sm:p-8 max-w-lg w-full text-center shadow-2xl border-6 border-[#8854C0] transform scale-90 transition-transform duration-300" id="modal-card">
+            <div class="text-2xl font-black text-[#8854C0] mb-3">🌟 KẾT QUẢ BÀI LÀM CỦA CON 🌟</div>
+            <div class="text-5xl font-black text-[#00D26A] my-4 drop-shadow-md" id="scoreDisplay">0 / 0</div>
+            <div class="text-sm sm:text-base leading-relaxed text-[#4A5568] font-bold mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100" id="feedbackDisplay">Loading...</div>
+            <button class="bg-[#8854C0] text-white border-b-4 border-[#5F27CD] px-8 py-3.5 font-black text-base rounded-2xl hover:scale-105 active:scale-95 transition-all w-full" onclick="closeGradeModal()">
+                LÀM LẠI & HỌC TIẾP 📚
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // High quality sound generator using pure hardware synthesis (No external URLs)
+        const playSfx = (type) => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (type === 'correct') {
+                    // Ascending clear chime
+                    const osc1 = ctx.createOscillator();
+                    const osc2 = ctx.createOscillator();
+                    const gainNode = ctx.createGain();
+
+                    osc1.type = 'triangle';
+                    osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc1.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.15); // C6
+
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.05); // E5
+                    osc2.frequency.exponentialRampToValueAtTime(1318.51, ctx.currentTime + 0.2); // E6
+
+                    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+
+                    osc1.connect(gainNode);
+                    osc2.connect(gainNode);
+                    gainNode.connect(ctx.destination);
+
+                    osc1.start();
+                    osc2.start();
+                    osc1.stop(ctx.currentTime + 0.35);
+                    osc2.stop(ctx.currentTime + 0.35);
+                } else if (type === 'wrong') {
+                    // Descending buzz sound "Téo teo tèo"
+                    const frequencies = [220, 185, 147];
+                    const duration = 0.15;
+
+                    frequencies.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * duration));
+                        
+                        gain.gain.setValueAtTime(0, ctx.currentTime + (idx * duration));
+                        gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + (idx * duration) + 0.02);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + (idx * duration) + duration - 0.02);
+
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        
+                        osc.start(ctx.currentTime + (idx * duration));
+                        osc.stop(ctx.currentTime + (idx * duration) + duration);
+                    });
+                }
+            } catch(e) {
+                console.warn("Audio synthesis context blocked or failed: ", e);
+            }
+        };
+
+        const activeConfetti = [];
+        const canvas = document.getElementById("confetti-canvas");
+        const ctxCanvas = canvas.getContext("2d");
+
+        function resizeConfettiCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resizeConfettiCanvas);
+        resizeConfettiCanvas();
+
+        function createConfettiExplosion() {
+            for (let i = 0; i < 60; i++) {
+                activeConfetti.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height + 20,
+                    size: Math.random() * 8 + 5,
+                    color: `hsl(${Math.random() * 360}, 90%, 65%)`,
+                    speedX: Math.random() * 8 - 4,
+                    speedY: -(Math.random() * 12 + 10),
+                    gravity: 0.28,
+                    rotation: Math.random() * 360,
+                    rotSpeed: Math.random() * 10 - 5
+                });
+            }
+        }
+
+        function updateConfetti() {
+            ctxCanvas.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = activeConfetti.length - 1; i >= 0; i--) {
+                const p = activeConfetti[i];
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.speedY += p.gravity;
+                p.rotation += p.rotSpeed;
+
+                ctxCanvas.save();
+                ctxCanvas.translate(p.x, p.y);
+                ctxCanvas.rotate(p.rotation * Math.PI / 180);
+                ctxCanvas.fillStyle = p.color;
+                ctxCanvas.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                ctxCanvas.restore();
+
+                if (p.y > canvas.height + 50) {
+                    activeConfetti.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(updateConfetti);
+        }
+        requestAnimationFrame(updateConfetti);
+
+        const exercisesMeta = [
+            { id: "exercise14", label: "Phần 1: Ex 14", title: "Exercise 14: Choose the word or phrase that best completes each of the following exchanges" },
+            { id: "exercise15", label: "Phần 2: Ex 15", title: "Exercise 15: Choose the correct answer to arrange the sentences into conversation" }
+        ];
+
+        const database = {
+            exercise14: [
+                {
+                    id: "e14_1",
+                    q: "- Mai: What’s your hobby, Lan?<br>- Lan: “______”",
+                    options: ["I love books", "Reading story books", "I’m reading The Trumpet", "I do it every day"],
+                    ans: "Reading story books",
+                    exp: `
+                        <div class="space-y-2">
+                            <p class="text-emerald-700 font-extrabold"><i class="fa-solid fa-language"></i> Bước 1: Dịch câu hỏi</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Mai hỏi: "Sở thích của cậu là gì hả Lan?" và Lan trả lời.</p>
+                            
+                            <p class="text-[#8854C0] font-extrabold"><i class="fa-solid fa-list-check"></i> Bước 2: Dịch nghĩa 4 đáp án</p>
+                            <ul class="list-disc list-inside space-y-1 pl-4 text-slate-700">
+                                <li><strong>A. I love books</strong>: Tớ yêu thích sách (danh từ, không diễn đạt hoạt động sở thích trực tiếp).</li>
+                                <li><strong>B. Reading story books</strong>: Đọc sách truyện (danh động từ V-ing cực kỳ thích hợp để làm sở thích).</li>
+                                <li><strong>C. I’m reading The Trumpet</strong>: Tớ đang đọc cuốn Trumpet (hành động tiếp diễn hiện tại, không phải nói về sở thích chung chung).</li>
+                                <li><strong>D. I do it every day</strong>: Tớ làm việc đó mỗi ngày (chưa rõ hành động "it" cụ thể là gì).</li>
+                            </ul>
+                            
+                            <p class="text-[#00C9A7] font-extrabold"><i class="fa-solid fa-circle-check"></i> Bước 3: Tại sao đáp án B đúng</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Sử dụng danh động từ V-ing làm chủ ngữ hoặc cụm từ độc lập (như <em>Reading story books</em>) là cách tự nhiên nhất để diễn tả trực diện sở thích cá nhân khi có người hỏi "What's your hobby?".</p>
+                            
+                            <p class="text-rose-600 font-extrabold"><i class="fa-solid fa-circle-xmark"></i> Bước 4: Tại sao các câu khác sai</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-rose-200">A sai vì chỉ nêu danh từ chung chứ chưa biểu thị hành động sở thích. C sai vì trả lời hành vi tạm thời đang diễn ra tại thời điểm nói. D sai vì thông tin quá chung chung và tối nghĩa.</p>
+                        </div>
+                    `
+                },
+                {
+                    id: "e14_2",
+                    q: "- Jack: How did you start your bookmark collection?<br>- Phong: “______”",
+                    options: ["I have a big collection", "My collection is interesting", "No, I don't like football", "My favourite one is cycling"],
+                    ans: "I have a big collection",
+                    exp: `
+                        <div class="space-y-2">
+                            <p class="text-emerald-700 font-extrabold"><i class="fa-solid fa-language"></i> Bước 1: Dịch câu hỏi</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Jack hỏi: "Cậu đã bắt đầu bộ sưu tập kẹp sách của mình thế nào vậy?" và Phong phản hồi.</p>
+                            
+                            <p class="text-[#8854C0] font-extrabold"><i class="fa-solid fa-list-check"></i> Bước 2: Dịch nghĩa 4 đáp án</p>
+                            <ul class="list-disc list-inside space-y-1 pl-4 text-slate-700">
+                                <li><strong>A. I have a big collection</strong>: Tớ đang có một bộ sưu tập lớn đấy (bắt đầu câu chuyện bằng cách chia sẻ thực tế đầy tự hào).</li>
+                                <li><strong>B. My collection is interesting</strong>: Bộ sưu tập của tớ thú vị lắm (nhận xét tính chất, không đúng trọng tâm làm sao bắt đầu).</li>
+                                <li><strong>C. No, I don't like football</strong>: Không, tớ không thích bóng đá (lạc đề hoàn toàn).</li>
+                                <li><strong>D. My favourite one is cycling</strong>: Môn yêu thích của tớ là đạp xe (lạc sang sở thích vận động ngoài trời).</li>
+                            </ul>
+                            
+                            <p class="text-[#00C9A7] font-extrabold"><i class="fa-solid fa-circle-check"></i> Bước 3: Tại sao đáp án A đúng</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Dù đề bài gốc có một chút lỗi đánh máy về tính logic, trong 4 đáp án cho sẵn, phương án A là câu trả lời mang tính tương tác đàm thoại gần gũi và ăn khớp nhất với chủ đề sưu tập kẹp sách (bookmark collection).</p>
+                            
+                            <p class="text-rose-600 font-extrabold"><i class="fa-solid fa-circle-xmark"></i> Bước 4: Tại sao các câu khác sai</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-rose-200">B, C, D đều lạc đề hoặc chuyển hoàn toàn sang các thói quen khác không hề liên quan gì đến bộ sưu tập kẹp sách đang được hỏi.</p>
+                        </div>
+                    `
+                },
+                {
+                    id: "e14_3",
+                    q: "- Tom: Do you like sports?<br>- Jack: “______”",
+                    options: ["Yes, I'd love to.", "Yes, I do", "No, I don't like football", "My favourite one is cycling"],
+                    ans: "Yes, I do",
+                    exp: `
+                        <div class="space-y-2">
+                            <p class="text-emerald-700 font-extrabold"><i class="fa-solid fa-language"></i> Bước 1: Dịch câu hỏi</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Tom hỏi: "Cậu có thích thể thao không?" và Jack trả lời thích hay không.</p>
+                            
+                            <p class="text-[#8854C0] font-extrabold"><i class="fa-solid fa-list-check"></i> Bước 2: Dịch nghĩa 4 đáp án</p>
+                            <ul class="list-disc list-inside space-y-1 pl-4 text-slate-700">
+                                <li><strong>A. Yes, I'd love to.</strong>: Có, tớ rất sẵn lòng (thường chỉ dùng khi nhận một lời mời lịch sự).</li>
+                                <li><strong>B. Yes, I do</strong>: Có, tớ thích chứ (câu trả lời chuẩn mực cho câu hỏi nghi vấn Yes/No).</li>
+                                <li><strong>C. No, I don't like football</strong>: Không, tớ không thích bóng đá (bóng đá chỉ là một môn thể thao, câu hỏi đang hỏi chung về "sports" số nhiều).</li>
+                                <li><strong>D. My favourite one is cycling</strong>: Sở thích đạp xe của tớ (trả lời trực tiếp môn cụ thể, không trả lời Yes/No).</li>
+                            </ul>
+                            
+                            <p class="text-[#00C9A7] font-extrabold"><i class="fa-solid fa-circle-check"></i> Bước 3: Tại sao đáp án B đúng</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">"Do you like sports?" là câu hỏi nghi vấn hiện tại đơn. Trình tự phản hồi ngắn chuẩn ngữ pháp bắt buộc phải là "Yes, I do" hoặc "No, I don't".</p>
+                            
+                            <p class="text-rose-600 font-extrabold"><i class="fa-solid fa-circle-xmark"></i> Bước 4: Tại sao các câu khác sai</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-rose-200">A sai cấu trúc ngữ cảnh (lời mời). C và D không phản hồi đúng ngữ pháp cấu trúc Yes/No cần thiết ban đầu.</p>
+                        </div>
+                    `
+                },
+                {
+                    id: "e14_4",
+                    q: "- Mai: I go swimming three times a week<br>- Alice: “______”",
+                    options: ["That’s great!", "No, I don’t", "Will you", "There’s a swimming pool near my house"],
+                    ans: "That’s great!",
+                    exp: `
+                        <div class="space-y-2">
+                            <p class="text-emerald-700 font-extrabold"><i class="fa-solid fa-language"></i> Bước 1: Dịch câu hỏi</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Mai kể: "Tớ đi bơi ba lần một tuần đấy". Alice đưa ra phản hồi giao tiếp.</p>
+                            
+                            <p class="text-[#8854C0] font-extrabold"><i class="fa-solid fa-list-check"></i> Bước 2: Dịch nghĩa 4 đáp án</p>
+                            <ul class="list-disc list-inside space-y-1 pl-4 text-slate-700">
+                                <li><strong>A. That’s great!</strong>: Ôi tuyệt thật đấy! (khích lệ, khen ngợi thói quen lành mạnh của bạn).</li>
+                                <li><strong>B. No, I don’t</strong>: Không, tớ không làm thế (phản hồi cộc cằn, ngắt cuộc trò chuyện).</li>
+                                <li><strong>C. Will you</strong>: Cậu sẽ làm thế chứ? (sai hoàn toàn cấu trúc thời thì hiện tại).</li>
+                                <li><strong>D. There’s a swimming pool near my house</strong>: Có một bể bơi gần nhà tớ (thông tin rời rạc, chưa tương tác trực tiếp với bạn).</li>
+                            </ul>
+                            
+                            <p class="text-[#00C9A7] font-extrabold"><i class="fa-solid fa-circle-check"></i> Bước 3: Tại sao đáp án A đúng</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">"That's great!" là mẫu câu cảm thán lịch sự và khuyến khích cực kỳ phổ biến trong giao tiếp hằng ngày của người bản xứ khi nghe người khác kể một thói quen tốt.</p>
+                            
+                            <p class="text-rose-600 font-extrabold"><i class="fa-solid fa-circle-xmark"></i> Bước 4: Tại sao các câu khác sai</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-rose-200">B quá thô lỗ; C sai ngữ pháp tương lai; D thiếu tính liên kết đàm thoại giữa hai người bạn.</p>
+                        </div>
+                    `
+                },
+                {
+                    id: "e14_5",
+                    q: "- Mark: I code in my free time.<br>- Minh: “______”",
+                    options: ["Do you like the subject?", "Yes, you should", "I have no idea", "Wow, it’s amazing!"],
+                    ans: "Wow, it’s amazing!",
+                    exp: `
+                        <div class="space-y-2">
+                            <p class="text-emerald-700 font-extrabold"><i class="fa-solid fa-language"></i> Bước 1: Dịch câu hỏi</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Mark nói: "Tớ tập viết mã/lập trình máy tính lúc rảnh rỗi". Minh phản hồi bày tỏ cảm xúc.</p>
+                            
+                            <p class="text-[#8854C0] font-extrabold"><i class="fa-solid fa-list-check"></i> Bước 2: Dịch nghĩa 4 đáp án</p>
+                            <ul class="list-disc list-inside space-y-1 pl-4 text-slate-700">
+                                <li><strong>A. Do you like the subject?</strong>: Bạn có thích môn học này không? (Coding ở đây là sở thích giải trí rảnh rỗi tự do, không hẳn là môn học bắt buộc ở trường).</li>
+                                <li><strong>B. Yes, you should</strong>: Ừ, cậu nên làm thế (đây là lời khuyên bảo, không phải câu trả lời nhận xét).</li>
+                                <li><strong>C. I have no idea</strong>: Tớ chịu/Không biết gì cả (thờ ơ và kém lịch sự).</li>
+                                <li><strong>D. Wow, it’s amazing!</strong>: Wow, đỉnh thật đấy/kỳ diệu thật đấy! (bày tỏ sự ngưỡng mộ).</li>
+                            </ul>
+                            
+                            <p class="text-[#00C9A7] font-extrabold"><i class="fa-solid fa-circle-check"></i> Bước 3: Tại sao đáp án D đúng</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Vì "coding" (lập trình máy tính) là một hoạt động tư duy khó và thú vị, câu cảm thán "Wow, it's amazing!" phản ánh chính xác thái độ thán phục, khích lệ một người bạn khéo tay trí tuệ.</p>
+                            
+                            <p class="text-rose-600 font-extrabold"><i class="fa-solid fa-circle-xmark"></i> Bước 4: Tại sao các câu khác sai</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-rose-200">A sai ngữ cảnh; B dùng sai mục đích giao tiếp; C thiếu sự thân thiện cơ bản.</p>
+                        </div>
+                    `
+                }
+            ],
+            exercise15: [
+                {
+                    id: "e15_1",
+                    q: "Sắp xếp các câu sau thành một cuộc đối thoại logic:<br><strong>a. Brian:</strong> Not really. I prefer classical music, it's very relaxing.<br><strong>b. Ally:</strong> Do you like listening to pop music, Brian?<br><strong>c. Ally:</strong> Oh, I find classical music a bit boring. I like pop because it makes me want to dance!",
+                    options: ["a-b-c", "b-a-c", "b-c-a", "c-a-b"],
+                    ans: "b-a-c",
+                    exp: `
+                        <div class="space-y-2">
+                            <p class="text-emerald-700 font-extrabold"><i class="fa-solid fa-language"></i> Bước 1: Dịch các câu trong hội thoại</p>
+                            <ul class="list-disc list-inside space-y-1 pl-4 text-slate-700">
+                                <li><strong>a. Brian</strong>: Không hẳn. Tớ thích nhạc cổ điển hơn, nó nghe rất thư giãn đầu óc.</li>
+                                <li><strong>b. Ally</strong>: Cậu có thích nghe nhạc pop không hả Brian?</li>
+                                <li><strong>c. Ally</strong>: Ồ, tớ thấy nhạc cổ điển hơi tẻ nhạt. Tớ thích nhạc pop hơn vì nó làm tớ muốn nhún nhảy!</li>
+                            </ul>
+                            
+                            <p class="text-[#8854C0] font-extrabold"><i class="fa-solid fa-list-check"></i> Bước 2: Phân tích mạch logic hội thoại</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-[#8854C0]">Cuộc hội thoại phải bắt đầu bằng một câu hỏi khơi gợi chủ đề của Ally <strong>(b)</strong>. Brian trả lời không hẳn và đưa ra sở thích cá nhân là nhạc cổ điển <strong>(a)</strong>. Ally phản hồi lại sở thích cổ điển đó bằng nhận xét trái chiều và giải thích lý do vì sao mình lại thích nhạc pop <strong>(c)</strong>.</p>
+                            
+                            <p class="text-[#00C9A7] font-extrabold"><i class="fa-solid fa-circle-check"></i> Bước 3: Tại sao đáp án b-a-c đúng</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Thứ tự <strong>b-a-c</strong> tạo nên dòng trao đổi tự nhiên và logic nhất: Hỏi ý kiến (b) -> Trả lời & gợi mở ý mới (a) -> Nhận xét phản hồi ý mới (c).</p>
+                            
+                            <p class="text-rose-600 font-extrabold"><i class="fa-solid fa-circle-xmark"></i> Bước 4: Tại sao các phương án khác sai</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-rose-200">A sai vì chưa hỏi đã trả lời. C sai vì Brian chưa kịp trả lời Ally đã vội chê nhạc cổ điển. D sai vì thứ tự hoàn toàn đảo lộn vô nghĩa.</p>
+                        </div>
+                    `
+                },
+                {
+                    id: "e15_2",
+                    q: "Sắp xếp các câu sau thành một cuộc đối thoại logic:<br><strong>a. Brian:</strong> I don't agree. If you're careful, it's quite safe and fun.<br><strong>b. Ally:</strong> Maybe, but falling off a horse looks very scary!<br><strong>c. Ally:</strong> I think horse-riding is a very dangerous sport. What do you think?",
+                    options: ["a-b-c", "b-a-c", "c-a-b", "c-b-a"],
+                    ans: "c-a-b",
+                    exp: `
+                        <div class="space-y-2">
+                            <p class="text-emerald-700 font-extrabold"><i class="fa-solid fa-language"></i> Bước 1: Dịch các câu trong hội thoại</p>
+                            <ul class="list-disc list-inside space-y-1 pl-4 text-slate-700">
+                                <li><strong>a. Brian</strong>: Tớ không đồng ý đâu. Nếu cậu cẩn thận, môn cưỡi ngựa thực ra khá an toàn và vui vẻ.</li>
+                                <li><strong>b. Ally</strong>: Có thể vậy, nhưng bị ngã khỏi lưng ngựa trông đáng sợ lắm!</li>
+                                <li><strong>c. Ally</strong>: Tớ nghĩ cưỡi ngựa là môn thể thao rất nguy hiểm. Cậu nghĩ sao?</li>
+                            </ul>
+                            
+                            <p class="text-[#8854C0] font-extrabold"><i class="fa-solid fa-list-check"></i> Bước 2: Phân tích mạch logic hội thoại</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-[#8854C0]">Ally đưa ra nhận định ban đầu kèm câu hỏi mở "What do you think?" <strong>(c)</strong>. Brian trực tiếp đưa ra ý kiến trái chiều bằng cụm từ phản bác "I don't agree" và giải thích <strong>(a)</strong>. Ally nhượng bộ một phần bằng "Maybe" nhưng vẫn bổ sung lý do gây sợ hãi để bảo vệ quan điểm <strong>(b)</strong>.</p>
+                            
+                            <p class="text-[#00C9A7] font-extrabold"><i class="fa-solid fa-circle-check"></i> Bước 3: Tại sao đáp án c-a-b đúng</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Trình tự <strong>c-a-b</strong> là quá trình lập luận và trao đổi ý kiến chuẩn chỉnh, lịch sự trong tiếng Anh: Khơi mào tranh biện (c) -> Đưa luận điểm phản bác (a) -> Tiếp nhận phản bác & bổ sung lo ngại (b).</p>
+                            
+                            <p class="text-rose-600 font-extrabold"><i class="fa-solid fa-circle-xmark"></i> Bước 4: Tại sao các phương án khác sai</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-rose-200">Tất cả các thứ tự khác đều làm đứt gãy mạch logic của từ nối phản bác "I don't agree" hoặc từ tiếp thu nhượng bộ "Maybe".</p>
+                        </div>
+                    `
+                },
+                {
+                    id: "e15_3",
+                    q: "Sắp xếp các câu sau thành một cuộc đối thoại logic:<br><strong>a. Brian:</strong> Oh, I love reading books. It's much safer than hiking, I think.<br><strong>b. Ally:</strong> You're right, hiking can be dangerous sometimes, but it's exciting!<br><strong>c. Ally:</strong> What's your favorite hobby, Brian? Mine is hiking!",
+                    options: ["a-b-c", "b-a-c", "c-a-b", "c-b-a"],
+                    ans: "c-a-b",
+                    exp: `
+                        <div class="space-y-2">
+                            <p class="text-emerald-700 font-extrabold"><i class="fa-solid fa-language"></i> Bước 1: Dịch các câu trong hội thoại</p>
+                            <ul class="list-disc list-inside space-y-1 pl-4 text-slate-700">
+                                <li><strong>a. Brian</strong>: Ồ, tớ cực yêu việc đọc sách. Tớ nghĩ đọc sách an toàn hơn nhiều so với đi leo núi dã ngoại.</li>
+                                <li><strong>b. Ally</strong>: Cậu nói đúng đấy, leo núi đôi khi nguy hiểm thật, nhưng bù lại rất hào hứng!</li>
+                                <li><strong>c. Ally</strong>: Sở thích yêu thích nhất của cậu là gì hả Brian? Của tớ là leo núi dã ngoại!</li>
+                            </ul>
+                            
+                            <p class="text-[#8854C0] font-extrabold"><i class="fa-solid fa-list-check"></i> Bước 2: Phân tích mạch logic hội thoại</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-[#8854C0]">Ally mở lời hỏi sở thích đối phương và tự giới thiệu luôn sở thích leo núi của mình <strong>(c)</strong>. Brian phản hồi sở thích đọc sách và so sánh tính an toàn với môn leo núi của bạn <strong>(a)</strong>. Ally đồng tình với so sánh nguy hiểm của bạn "You're right" nhưng khẳng định sự phấn khích của trò leo núi <strong>(b)</strong>.</p>
+                            
+                            <p class="text-[#00C9A7] font-extrabold"><i class="fa-solid fa-circle-check"></i> Bước 3: Tại sao đáp án c-a-b đúng</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-emerald-200">Trình tự <strong>c-a-b</strong> thiết lập một cuộc đối thoại trao đổi hài hòa, có sự so sánh liên kết trực tiếp giữa đọc sách (book reading) và dã ngoại leo núi (hiking).</p>
+                            
+                            <p class="text-rose-600 font-extrabold"><i class="fa-solid fa-circle-xmark"></i> Bước 4: Tại sao các phương án khác sai</p>
+                            <p class="text-slate-700 pl-4 border-l-2 border-rose-200">Các phương án khác làm xáo trộn mạch phản hồi, khiến câu nói đồng tình "You're right" bị đặt sai chỗ khi Brian chưa hề đưa ra ý kiến nào trước đó.</p>
+                        </div>
+                    `
+                }
+            ]
+        };
+
+        const shuffledOptionsCache = {};
+        const userAnswers = {}; // Keeps user selection state: { questionId: { val: "abc", isCorrect: true/false } }
+        let activeTabId = "exercise14";
+
+        // Shuffle questions' option lists once on startup to prevent reshuffling when flipping between tabs
+        const initShuffleCache = () => {
+            Object.keys(database).forEach(exId => {
+                database[exId].forEach(q => {
+                    if (q.options) {
+                        shuffledOptionsCache[q.id] = [...q.options].sort(() => Math.random() - 0.5);
+                    }
+                });
+            });
+        };
+
+        // Live point calculations and bar rendering
+        const updateFooterScore = () => {
+            let correctCount = 0;
+            Object.keys(userAnswers).forEach(key => {
+                if (userAnswers[key] && userAnswers[key].isCorrect) {
+                    correctCount++;
+                }
+            });
+            const currentScore = correctCount * 10;
+            document.getElementById("footer-score-display").innerHTML = `⭐ Điểm của con: ${currentScore}`;
+        };
+
+        const renderTabs = () => {
+            const container = document.getElementById("tabs-container");
+            let html = "";
+            exercisesMeta.forEach(meta => {
+                const activeClass = meta.id === activeTabId ? "active" : "";
+                html += `
+                    <button class="tab-btn bg-white/95 border-2 border-[#E4F1FE] border-b-4 border-slate-300 py-3.5 px-3 rounded-2xl font-black text-[#4A5568] transition-all hover:translate-y-[-2px] active:translate-y-[1px] active:border-b-2 text-xs sm:text-sm flex items-center justify-center gap-2 ${activeClass}" onclick="switchTab('${meta.id}')">
+                        <i class="fa-solid fa-star text-amber-400"></i> ${meta.label}
+                    </button>
+                `;
+            });
+            container.innerHTML = html;
+        };
+
+        const switchTab = (tabId) => {
+            activeTabId = tabId;
+            renderTabs();
+            renderActiveQuiz();
+        };
+
+        const renderActiveQuiz = () => {
+            const container = document.getElementById("active-quiz-container");
+            const activeMeta = exercisesMeta.find(m => m.id === activeTabId);
+            const questions = database[activeTabId];
+            
+            let html = `
+                <div class="bg-white rounded-[28px] p-5 sm:p-6 mb-6 shadow-xl border-4 border-[#E4F1FE]">
+                    <div class="text-base sm:text-lg font-black text-[#8854C0] mb-5 pb-3 border-b-4 border-dashed border-[#E4F1FE] flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i>
+                        <span>${activeMeta.title}</span>
+                    </div>
+            `;
+
+            questions.forEach((item, index) => {
+                const state = userAnswers[item.id];
+                const isAnswered = !!state;
+
+                html += `
+                    <div class="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 sm:p-5 mb-5 last:mb-0 transition-all" id="box_${item.id}">
+                        <div class="text-sm sm:text-base font-black text-slate-800 mb-4 flex items-start gap-3 leading-relaxed">
+                            <span class="bg-[#8854C0] text-white px-3 py-1 rounded-lg text-xs font-black shadow-md whitespace-nowrap">Câu ${index + 1}</span>
+                            <span>${item.q}</span>
+                        </div>
+                `;
+
+                html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 ${isAnswered ? 'answered pointer-events-none' : ''}">`;
+                const options = shuffledOptionsCache[item.id] || item.options;
+                options.forEach(opt => {
+                    let btnClass = "bg-white border-2 border-slate-200 border-b-4 border-slate-300 text-slate-700";
+                    let iconClass = "fa-regular fa-circle text-slate-300";
+
+                    if (isAnswered) {
+                        if (opt === state.val) {
+                            if (state.isCorrect) {
+                                btnClass = "correct text-emerald-800";
+                                iconClass = "fa-solid fa-circle-check text-emerald-600";
+                            } else {
+                                btnClass = "wrong text-rose-800";
+                                iconClass = "fa-solid fa-circle-xmark text-rose-600";
+                            }
+                        } else if (opt === item.ans) {
+                            btnClass = "correct text-emerald-800";
+                            iconClass = "fa-solid fa-circle-check text-emerald-600";
+                        }
+                        btnClass += " disabled";
+                    }
+
+                    html += `
+                        <button class="gamified-btn option-btn rounded-2xl py-3.5 px-4 font-black text-sm sm:text-base text-left flex justify-between items-center gap-3 transition-all ${btnClass}" onclick="checkMcq(this, '${opt}', '${item.ans}', '${item.id}')">
+                            <span>${opt}</span>
+                            <i class="${iconClass} text-lg shrink-0"></i>
+                        </button>
+                    `;
+                });
+                html += `</div>`;
+
+                // Super-detailed Thạc Sĩ Ms Lê Hằng Explanation Box (Displays instantly after answering)
+                html += `
+                        <div class="mt-4 bg-[#F0F7FF] border-l-4 border-sky-600 rounded-xl p-4 hidden transition-all duration-300" id="exp_${item.id}">
+                            <div class="font-black text-sky-800 mb-3 text-sm sm:text-base flex items-center gap-2">
+                                <i class="fa-solid fa-graduation-cap"></i> Giải thích chi tiết từ Ms Lê Hằng:
+                            </div>
+                            <div class="text-xs sm:text-sm text-slate-700 font-bold leading-relaxed">${item.exp}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+
+            // Immediately show explanations for already answered questions
+            questions.forEach(item => {
+                if (userAnswers[item.id]) {
+                    document.getElementById(`exp_${item.id}`).classList.remove("hidden");
+                }
+            });
+        };
+
+        const checkMcq = (element, selection, correctAnswer, id) => {
+            const parent = element.closest(".grid");
+            if (parent.classList.contains("answered")) return;
+
+            const isCorrect = selection === correctAnswer;
+            userAnswers[id] = { val: selection, isCorrect: isCorrect };
+
+            if (isCorrect) {
+                playSfx('correct');
+                createConfettiExplosion();
+            } else {
+                playSfx('wrong');
+                const qBox = element.closest("[id^='box_']");
+                qBox.classList.add("shake");
+                setTimeout(() => qBox.classList.remove("shake"), 500);
+            }
+
+            updateFooterScore();
+            renderActiveQuiz();
+        };
+
+        const gradeExam = () => {
+            let correctCount = 0;
+            const totalQuestions = Object.values(database).reduce((sum, arr) => sum + arr.length, 0);
+            
+            Object.keys(userAnswers).forEach(key => {
+                if (userAnswers[key] && userAnswers[key].isCorrect === true) {
+                    correctCount++;
+                }
+            });
+
+            const scorePercent = (correctCount / totalQuestions) * 100;
+            const display = document.getElementById("scoreDisplay");
+            display.innerText = `${correctCount} / ${totalQuestions}`;
+
+            const feedback = document.getElementById("feedbackDisplay");
+            let message = "";
+
+            if (scorePercent < 50) {
+                message = "😢 <strong>Ms Lê Hằng nhắn nhủ:</strong><br>\"Điểm lần này chưa cao lắm, con cố gắng đọc kỹ giải thích đáp án và làm lại nha. Cô tin con sẽ làm tốt hơn ở lần sau!\"";
+            } else if (scorePercent >= 50 && scorePercent < 90) {
+                message = "😉 <strong>Ms Lê Hằng nhắn nhủ:</strong><br>\"Con đã có tiến bộ khá ổn rồi, con cố gắng đọc kỹ giải thích đáp án và làm lại nha. Cô tin con sẽ làm tốt hơn ở lần sau!\"";
+            } else {
+                message = "🌟 <strong>Ms Lê Hằng nhắn nhủ:</strong><br>\"Làm tốt lắm, con cố gắng rinh điểm 10 tuyệt đối ở lần sau nha!\"";
+            }
+
+            feedback.innerHTML = message;
+            
+            const modal = document.getElementById("gradeModal");
+            const card = document.getElementById("modal-card");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            setTimeout(() => {
+                card.classList.remove("scale-90");
+                card.classList.add("scale-100");
+            }, 50);
+
+            if (scorePercent >= 80) {
+                createConfettiExplosion();
+                setTimeout(createConfettiExplosion, 350);
+            }
+        };
+
+        const closeGradeModal = () => {
+            const modal = document.getElementById("gradeModal");
+            const card = document.getElementById("modal-card");
+            card.classList.remove("scale-100");
+            card.classList.add("scale-90");
+            
+            setTimeout(() => {
+                modal.classList.remove("flex");
+                modal.classList.add("hidden");
+                // Clear answers to let them try again
+                Object.keys(userAnswers).forEach(k => delete userAnswers[k]);
+                updateFooterScore();
+                switchTab("exercise14");
+            }, 150);
+        };
+
+        // Bootstrap on DOM Load
+        window.onload = () => {
+            initShuffleCache();
+            renderTabs();
+            renderActiveQuiz();
+            updateFooterScore();
+        };
+    </script>
+</body>
+</html>
